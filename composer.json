@@ -20,5 +20,8 @@
     },
     "autoload": {
         "psr-4": { "Arvodia\\Grouper\\": "src" }
+    },
+    "extra": {
+        "class": "Arvodia\\Grouper\\Composer\\GrouperPlugin"
     }
 }
