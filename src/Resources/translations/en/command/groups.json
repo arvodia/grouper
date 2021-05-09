@@ -1,0 +1,8 @@
+{
+    "desc": "Shows information about all available groups.",
+    "argument_group": "Group to inspect, if not provided all groups are.",
+    "option_enabled": "Show only enabled groups.",
+    "option_raw": "To output raw group list",
+    "available_groups": "Available groups.",
+    "enabled_groups": "Enabled groups."
+}

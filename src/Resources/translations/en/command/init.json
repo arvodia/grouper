@@ -1,0 +1,12 @@
+{
+    "desc": "Creates a basic grouper.json file in composer working directory.",
+    "name_option": "Name of the grouper.",
+    "welcome": "Welcome to the grouper config generator.",
+    "intro": "This command will guide you through creating your grouper.json config.",
+    "confirm_add_group_new": "Do you want to define a new group [<comment>yes</comment>]?",
+    "confirm_add_group_another": "Do you want to define another group [<comment>yes</comment>]?",
+    "define_dependencies": "Define your dependencies.",
+    "confirm_add_require": "Would you like to define your dependencies (require) interactively [<comment>yes</comment>]?",
+    "ask_group_desc": "Group Description:",
+    "confirm_generation": "Do you confirm generation [<comment>yes</comment>]?"
+}

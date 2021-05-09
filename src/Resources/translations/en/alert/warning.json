@@ -1,0 +1,7 @@
+{
+    "initiate": "You must first initialize grouper, with the command : composer grouper:init",
+    "file_exists": "The \"%s\" file already exists",
+    "no_dependency": "The \"%s\" group has no dependency",
+    "already_de_activated": "The \"%1$s\" group is already \"%2$s\"",
+    "empty_de_activated": "The \"%1$s\" group requirements are empty, there is no package to \"%2$s\""
+}

@@ -1,0 +1,6 @@
+{
+    "ask_name_exception": "'The %1$s name \"%2$s\" is invalid, it should be lowercase,  corresponding to: [a-z0-9_.-]+'",
+    "group_not_found": "The group name \"%1$s\" could not be found, in \"%2$s\" groups.",
+    "action_not_found": "The action argument \"%s\" could not be found.",
+    "command_aborted": "Command aborted"
+}

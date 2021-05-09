@@ -16,29 +16,32 @@ use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Plugin\PluginInterface;
 use Composer\Plugin\Capable;
+use Composer\Factory;
+use Composer\Json\JsonFile;
 
 /**
  * Description
- * 
- * @name    : Plugin
- * @see     : 
- * @todo    : 
+ *
+ * @name    : GrouperPlugin
+ * @see     :
+ * @todo    : add installer
  *
  * @author Sidi Said Redouane <sidisaidredouane@live.com>
  */
 class GrouperPlugin implements PluginInterface, Capable {
 
     public function activate(Composer $composer, IOInterface $io) {
-        $installer = new Grouper($io, $composer);
-        $composer->getInstallationManager()->addInstaller($installer);
+
     }
 
     public function deactivate(Composer $composer, IOInterface $io) {
-        
+
     }
 
     public function uninstall(Composer $composer, IOInterface $io) {
-        
+        if (($grouper = new JsonFile(str_replace('composer.json', 'grouper.json', Factory::getComposerFile())))->exists()) {
+            @unlink($grouper->getPath());
+        }
     }
 
     public function getCapabilities(): array {

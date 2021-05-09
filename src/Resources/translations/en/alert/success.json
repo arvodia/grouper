@@ -1,0 +1,5 @@
+{
+    "generate_json": "The grouper.json file was generated successfully",
+    "groups_update": "The groups has been updated successfully",
+    "group_de_activated": "The \"%1$s\" group has been \"%2$s\" successfully"
+}

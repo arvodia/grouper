@@ -1,0 +1,18 @@
+{
+    "desc": "Group Manager command : activate, deactivate, add and remove",
+    "help": "Activation de groupe et installation de tous ces packages:\n\n  <info>%command.full_name% <group-name> activate</info>\n\ndeactivate de groupe et uninstallation de tous ces packages:\n\n  <info>%command.full_name% <group-name> deactivate</info>\n\nadd a package in group:\n\n  <info>%command.full_name% <group-name> add</info>\n\nremove a package from the group:\n\n  <info>%command.full_name% <group-name> remove</info>",
+    "argument_name": "The group name",
+    "argument_action": "Name of action to be carried out on the group",
+    "action_activate": "Group \"%s\" activation and installation of all these packages.",
+    "action_deactivate": "Group \"%s\" deactivate and uninstallation of all these packages. ",
+    "action_add": "Add a package in \"%s\" group.",
+    "action_remove": "Remove a package from the \"%s\" group.",
+    "activate": "activated",
+    "deactivate": "deactivated",
+    "install": "install",
+    "uninstallation": "uninstallation",
+    "confirm_add_package": "Would you like to add dependencies in the \"%s\" group [<comment>yes</comment>]?",
+    "confirm_remove_package": "Would you like to remove dependencies in the \"%s\" group [<comment>yes</comment>]?",
+    "confirm_remove_another": "Would you like to remove another dependency? [<comment>yes</comment>]?",
+    "select_remove_package": "Choose the package to delete in the \"%s\" group"
+}

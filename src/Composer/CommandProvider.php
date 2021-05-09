@@ -6,12 +6,15 @@
  * @email   : arvodia@hotmail.com
  * @project : Webfony
  * @date    : 2021
- * @license : tous droits réservés
+ * @license : MIT License
  * @update  : 7 mai 2021
  */
 
 namespace Arvodia\Grouper\Composer;
 
+use Arvodia\Grouper\Command\GrouperCommand;
+use Arvodia\Grouper\Command\GrouperGroupCommand;
+use Arvodia\Grouper\Command\GrouperInitCommand;
 use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
 
 /**
@@ -26,7 +29,11 @@ use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
 class CommandProvider implements CommandProviderCapability {
 
     public function getCommands() {
-        return array(new Command);
+        return [
+            new GrouperCommand,
+            new GrouperInitCommand,
+            new GrouperGroupCommand,
+        ];
     }
 
 }
