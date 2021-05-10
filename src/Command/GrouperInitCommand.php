@@ -106,7 +106,7 @@ class GrouperInitCommand extends RequirementsCommand {
             $this->alert->error('command_aborted');
         }
 
-        $grouper->write();
+        $grouper->save();
 
         $this->alert->success('generate_json');
     }

@@ -39,10 +39,6 @@ class GrouperCommand extends BaseCommand {
     private $io;
     private $trans;
 
-    public function __construct() {
-        parent::__construct();
-    }
-
     protected function configure() {
         $this->trans = (new Text())->getText('groups', 'command');
         $this->setName('grouper:groups')
@@ -89,18 +85,17 @@ class GrouperCommand extends BaseCommand {
     }
 
     private function showRawList(array $groups = []): void {
-        foreach ($groups as $group => $groupParams) {
-            $this->io->write(str_pad($group, $pad ?? ($pad = ($this->getMaxStrlen(array_keys($groups)) + 2)), " ") . ($groupParams['description'] ?? ''), true);
+        foreach ($groups as $group => $groupConfigs) {
+            $this->io->write(str_pad($group, $pad ?? ($pad = ($this->getMaxStrlen(array_keys($groups)) + 2)), " ") . ($groupConfigs['description'] ?? ''), true);
         }
     }
 
     private function showList(array $groups = []): void {
-        $groupPad = ($this->getMaxStrlen(array_keys($groups)) + 2);
-        foreach ($groups as $group => $groupParams) {
-            $this->io->write('<fg=yellow>' . str_pad($group, $groupPad, " ") . '</>' . ($groupParams['description'] ?? ''), true);
-            $paramsPad = ($this->getMaxStrlen(array_keys($groupParams)) + 2);
-            asort($groupParams);
-            foreach ($groupParams as $param => $values) {
+        foreach ($groups as $group => $groupConfigs) {
+            $this->io->write('<fg=yellow>' . $group . '</>', true);
+            $paramsPad = ($this->getMaxStrlen(array_keys($groupConfigs)) + 2);
+            asort($groupConfigs);
+            foreach ($groupConfigs as $param => $values) {
                 $this->io->write(str_repeat(" ", 2) . str_pad($param, $paramsPad, " ") . ': ' . (is_array($values) ? '' : $values), true);
                 if (is_array($values)) {
                     foreach ($values as $key => $value) {

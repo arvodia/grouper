@@ -15,6 +15,7 @@ namespace Arvodia\Grouper\Composer;
 use Arvodia\Grouper\Command\GrouperCommand;
 use Arvodia\Grouper\Command\GrouperGroupCommand;
 use Arvodia\Grouper\Command\GrouperInitCommand;
+use Arvodia\Grouper\Command\GrouperTaskCommand;
 use Composer\Plugin\Capability\CommandProvider as CommandProviderCapability;
 
 /**
@@ -33,6 +34,7 @@ class CommandProvider implements CommandProviderCapability {
             new GrouperCommand,
             new GrouperInitCommand,
             new GrouperGroupCommand,
+            new GrouperTaskCommand,
         ];
     }
 

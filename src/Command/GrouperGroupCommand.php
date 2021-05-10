@@ -12,16 +12,17 @@
 
 namespace Arvodia\Grouper\Command;
 
+use Arvodia\Grouper\Command\RequirementsCommand;
 use Arvodia\Grouper\Command\Traits\FormatterTrait;
 use Arvodia\Grouper\Console\Alert;
-use Arvodia\Grouper\Command\RequirementsCommand;
+use Arvodia\Grouper\Console\Terminal;
 use Arvodia\Grouper\Grouper;
+use Arvodia\Grouper\Task;
 use Arvodia\Grouper\Text;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
-use Symfony\Component\Process\Process;
 
 /**
  * Description
@@ -59,6 +60,12 @@ class GrouperGroupCommand extends RequirementsCommand {
             $alert->warning('initiate', null, true);
         }
 
+        $task = new Task($this->getComposer(), $io, $input);
+        
+        $task->runTasks($input->getArgument('name'));
+
+        die;
+        
         $group = strtolower($input->getArgument('name'));
         $action = strtolower($input->getArgument('action'));
 
@@ -78,24 +85,40 @@ class GrouperGroupCommand extends RequirementsCommand {
 
         if ('activate' == $action || 'deactivate' == $action) {
             $groupDetail = $this->formatGroups($grouper, $group)[$group];
+            $activate = ('activate' == $action);
 
-            if (('activate' == $action ? 'enabled' : 'disable') == $groupDetail['status']) {
+            if (($activate ? 'enabled' : 'disable') == $groupDetail['status']) {
                 $alert->warning('already_de_activated', [$group, $this->trans[$action]], true);
             }
 
-            if (empty($groupDetail['require']) || empty($noInstalledPackage = array_filter($groupDetail['require'], function ($package) use ($action) {
-                        return ('activate' == $action ? 'no installed' : 'installed') == $package['status'];
+            if (empty($groupDetail['require']) || empty($noInstalledPackage = array_filter($groupDetail['require'], function ($package) use ($action, $activate) {
+                        return ($activate ? 'no installed' : 'installed') == $package['status'];
                     }, ARRAY_FILTER_USE_BOTH))) {
-                $alert->warning('empty_de_activated', [$group, $this->trans['activate' == $action ? 'install' : 'uninstallation']], true);
+                $alert->warning('empty_de_activated', [$group, $this->trans[$activate ? 'install' : 'uninstallation']], true);
             }
 
-            $exec = 'composer ' . ('activate' == $action ? 'require' : 'remove');
+            $exec = 'composer ' . ($activate ? 'require' : 'remove');
             foreach (array_combine(array_keys($noInstalledPackage), array_column($noInstalledPackage, 'version')) as $package => $version) {
-                $exec .= 'activate' == $action ? ' "' . $package . '":"' . $version . '"' : ' ' . $package;
+                $exec .= $activate ? ' "' . $package . '":"' . $version . '"' : ' ' . $package;
                 $replace[] = '<fg=green>' . $package . '</>';
             }
 
-            $this->terminal($exec, $grouper->getRootDir(), $output, array_keys($noInstalledPackage), $replace);
+            // enabled for execute task
+            $grouper->setGroupEnabled($group, true)->save();
+
+            if (!Terminal::exec($exec, $grouper->getRootDir(), $io, array_keys($noInstalledPackage), $replace, false)) {
+                $grouper->setGroupEnabled($group, !$activate)->save();
+                $alert->error();
+            }
+
+            $task = new Task($this->getComposer(), $io, $input);
+
+            if (!$activate) {
+                $task->runTasks($group, true);
+                $grouper->setGroupEnabled($group, $activate)->save();
+            } else {
+                $task->runTasks($group);
+            }
 
             $alert->success('group_de_activated', [$group, $this->trans[$action]]);
         } elseif ('add' == $action) {
@@ -118,24 +141,13 @@ class GrouperGroupCommand extends RequirementsCommand {
             }
         }
 
-        if ($grouper->hasChanged()) {
-            $grouper->write();
-            $alert->success('groups_update');
+        if (!$grouper->hasChanged()) {
+            $alert->info('no_update');
+            $alert->error();
         }
 
-        $alert->info('no_update');
-
-        $alert->success();
-    }
-
-    public function terminal(string $exec, string $rootDir, OutputInterface $output, $search = null, $replace = null): void {
-        $process = new Process($exec, $rootDir);
-
-        if ($process->run(function ($type, $buffer) use ($output, $search, $replace) {
-                    $output->write(str_replace($search, $replace, $buffer));
-                }) != 0) {
-            throw new \RuntimeException('Can\'t run ' . $exec);
-        }
+        $grouper->save();
+        $alert->success('groups_update');
     }
 
 }

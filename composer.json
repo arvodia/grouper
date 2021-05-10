@@ -1,6 +1,7 @@
 {
     "name": "arvodia/grouper",
-    "description": "Composer package manager by group",
+    "description": "Composer plugin, package and tasks manager by group",
+    "keywords": ["composer", "plugin", "php", "packages", "tasks", "groups"],
     "type": "composer-plugin",
     "license": "MIT",
     "authors": [

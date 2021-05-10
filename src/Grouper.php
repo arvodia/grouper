@@ -32,8 +32,9 @@ class Grouper {
     private $changed = false;
     private $rootDir;
 
-    public function __construct(InputInterface $input) {
-        $this->rootDir = realpath($input->getOption('working-dir') ?: dirname(Factory::getComposerFile()));
+    public function __construct(InputInterface $input = null) {
+        $workingDir = $input ? $input->getOption('working-dir') : null;
+        $this->rootDir = realpath($workingDir ?: dirname(Factory::getComposerFile()));
         if (($this->json = new JsonFile($this->rootDir . '/grouper.json'))->exists()) {
             $this->grouper = $this->json->read();
         }
@@ -70,6 +71,18 @@ class Grouper {
         return $this->grouper['groups'][$name] ?? null;
     }
 
+    public function getGroupEnabled(string $name): bool {
+        return $this->grouper['groups'][$name]['enabled'] ?? false;
+    }
+
+    public function setGroupEnabled(string $name, bool $enabled): self {
+        if (\array_key_exists($name, $this->grouper['groups'])) {
+            $this->grouper['groups'][$name]['enabled'] = $enabled;
+            $this->changed = true;
+        }
+        return $this;
+    }
+
     public function getGroups(): array {
         return $this->grouper['groups'];
     }
@@ -84,6 +97,45 @@ class Grouper {
     public function setGroup(string $name, array $data = []): self {
         if (!\array_key_exists($name, $this->grouper['groups']) || $data !== $this->grouper['groups'][$name]) {
             $this->grouper['groups'][$name] = $data;
+            $this->changed = true;
+        }
+        return $this;
+    }
+
+    public function addPackageTask(string $group, string $package, string $task, array $data = []): self {
+        if (isset($this->grouper['groups'][$group]['require'][$package])) {
+            if (!is_array($this->grouper['groups'][$group]['require'][$package])) {
+                $this->grouper['groups'][$group]['require'][$package] = [
+                    'version' => $this->grouper['groups'][$group]['require'][$package],
+                ];
+            }
+            $current = $this->grouper['groups'][$group]['require'][$package]['tasks'][$task] ?? [];
+            $this->grouper['groups'][$group]['require'][$package]['tasks'][$task] = array_merge($current, [$data]);
+            $this->changed = true;
+        }
+        return $this;
+    }
+
+    public function resetPackageTask(string $group, string $package): self {
+        if (isset($this->grouper['groups'][$group]['require'][$package]['tasks'])) {
+            unset($this->grouper['groups'][$group]['require'][$package]['tasks']);
+            $this->changed = true;
+        }
+        return $this;
+    }
+
+    public function addGroupTask(string $group, string $task, array $data = []): self {
+        if (\array_key_exists($group, $this->grouper['groups'])) {
+            $current = $this->grouper['groups'][$group]['tasks'][$task] ?? [];
+            $this->grouper['groups'][$group]['tasks'][$task] = array_merge($current, [$data]);
+            $this->changed = true;
+        }
+        return $this;
+    }
+
+    public function resetGroupTask(string $group): self {
+        if (isset($this->grouper['groups'][$group]['tasks'])) {
+            unset($this->grouper['groups'][$group]['tasks']);
             $this->changed = true;
         }
         return $this;
@@ -124,7 +176,7 @@ class Grouper {
         $this->grouper = ['name' => '', 'groups' => []];
     }
 
-    public function write(): void {
+    public function save(): void {
         if (!$this->changed) {
             return;
         }

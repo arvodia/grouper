@@ -1,0 +1,13 @@
+{
+    "desc": "Add or delete the task setting for the group or package.",
+    "argument_name": "The group name",
+    "option_reset": "Reset tasks to zero",
+    "question_add_task": "Select the group or package, who do you want to give it a task?",
+    "question_add_reset": "Select the group or package to want to reset tasks?",
+    "question_type_task": "Select the task type?",
+    "confirm_add_anothe_task": "Want to add another task [<comment>yes</comment>]?",
+    "question_add_source": "Please add a source, The path compared to the location of \"%s\" :",
+    "question_add_destination": "Please add a destination, The path compared to the location of \"composer.json\":",
+    "not_valid_path": "The path is not valid",
+    "not_valid_path_slash": "the path must not end or begins with a slash."
+}
