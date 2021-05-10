@@ -59,12 +59,6 @@ class GrouperGroupCommand extends RequirementsCommand {
         if (!($grouper = new Grouper($input))->exists()) {
             $alert->warning('initiate', null, true);
         }
-
-        $task = new Task($this->getComposer(), $io, $input);
-        
-        $task->runTasks($input->getArgument('name'));
-
-        die;
         
         $group = strtolower($input->getArgument('name'));
         $action = strtolower($input->getArgument('action'));
