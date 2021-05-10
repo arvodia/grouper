@@ -43,7 +43,7 @@ class Terminal {
             if ($exit) {
                 throw new RuntimeException('Can\'t run ' . $exec);
             } else {
-                $io->error('Can\'t run ' . $exec, false);
+                $io->error('Can\'t run ' . $exec);
             }
             return false;
         }
