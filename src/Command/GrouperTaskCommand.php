@@ -14,6 +14,7 @@ namespace Arvodia\Grouper\Command;
 
 use Arvodia\Grouper\Console\Alert;
 use Arvodia\Grouper\Grouper;
+use Arvodia\Grouper\Task;
 use Arvodia\Grouper\Text;
 use Composer\Command\BaseCommand;
 use InvalidArgumentException;
@@ -22,6 +23,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use function str_ends_with;
 
 /**
  * Description
@@ -36,8 +38,11 @@ class GrouperTaskCommand extends BaseCommand {
 
     private const TASKS = [
         'file-mapping',
+        'file-mapping-overwrite',
         'css-minifying',
-        'js-minifying'
+        'css-minifying-overwrite',
+        'js-minifying',
+        'js-minifying-overwrite'
     ];
 
     protected function configure() {
@@ -47,11 +52,14 @@ class GrouperTaskCommand extends BaseCommand {
                 ->setDefinition([
                     new InputArgument('name', InputArgument::REQUIRED, $this->trans['argument_name']),
                 ])
-                ->addOption('reset', 'r', InputOption::VALUE_NONE, $this->trans['option_reset'])
+                ->addOption('run', 'r', InputOption::VALUE_NONE, $this->trans['option_run'])
+                ->addOption('delete', null, InputOption::VALUE_NONE, $this->trans['option_delete'])
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
+        $this->getIO()->write(Grouper::getLongVersion());
+
         $io = $this->getIO();
         $formatter = $this->getHelperSet()->get('formatter');
         $alert = new Alert($ss = new SymfonyStyle($input, $output));
@@ -65,17 +73,49 @@ class GrouperTaskCommand extends BaseCommand {
         if (!$grouper->hasGroup($group)) {
             $alert->error('group_not_found', [$group, $grouper->getName()]);
         }
+
+        $io->write(array(
+            '',
+            $formatter->formatBlock($this->trans['intro'], 'bg=blue;fg=white', true),
+            '',
+        ));
+
         $choices = array_merge([0 => $group], array_keys($grouper->getPackagesByGroup($group)));
 
-        $isMinify = false;
-        if ($input->getOption('reset')) {
-            $toApply = $ss->choice($this->trans['question_add_reset'], $choices);
+        if ($input->getOption('run')) {
+            if (!$grouper->isGroupActivated($group)) {
+                $alert->error('run_tasks_exception');
+            }
+
+            $task = new Task($this->getComposer(), $io, $input);
+            $io->write(sprintf('Run %s packages Tasks...', $group));
+
+            $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+            foreach ($grouper->getPackagesByGroup($group) as $package => $packageConfig) {
+                if (!is_null($packageObject = $installedRepo->findPackage($package, '*'))) {
+                    $task->runTasks($packageObject);
+                }
+            }
+
+            $io->write(sprintf('Run %s group Tasks...', $group));
+            $task->runTasks($group);
+            $alert->success();
+        } elseif ($input->getOption('delete')) {
+            $toApply = $ss->choice($this->trans['question_add_delete'], $choices);
             if (strpos($toApply, '/')) {
                 $grouper->resetPackageTask($group, $toApply);
             } else {
                 $grouper->resetGroupTask($group);
             }
         } else {
+            $isMinify = false;
+
+            $taskOption = $grouper->getGroupTaskOption($group);
+            if (!array_key_exists('uninstall', $taskOption)) {
+                $taskOption['uninstall'] = $io->askConfirmation($this->trans['ask_uninstall_remove'] . PHP_EOL . '>');
+                $grouper->setGroupTaskOption($group, $taskOption);
+            }
+
             while (!isset($toApply) || $io->askConfirmation($this->trans['confirm_add_anothe_task'] . PHP_EOL . '>')) {
                 $toApply = $ss->choice($this->trans['question_add_task'], $choices);
                 $task = $ss->choice($this->trans['question_type_task'], self::TASKS);
@@ -89,13 +129,13 @@ class GrouperTaskCommand extends BaseCommand {
                     $grouper->addGroupTask($group, $task, [$source, $dest]);
                 }
             }
-        }
 
-        if ($isMinify) {
-            $vendorDir = rtrim($this->getComposer()->getConfig()->get('vendor-dir'), '/');
-            $minifierBin = $vendorDir . '/bin/minifycss';
-            if (!file_exists($minifierBin)) {
-                $alert->warning('The "Minify" bin is part of the MatthiasMullie, which is not installed/enabled; try running "composer require matthiasmullie/minify".');
+            if ($isMinify) {
+                $vendorDir = rtrim($this->getComposer()->getConfig()->get('vendor-dir'), '/');
+                $minifierBin = $vendorDir . '/bin/minifycss';
+                if (!file_exists($minifierBin)) {
+                    $alert->warning('The "Minify" bin is part of the MatthiasMullie, which is not installed/enabled; try running "composer require matthiasmullie/minify".');
+                }
             }
         }
 

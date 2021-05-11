@@ -38,9 +38,11 @@ class GrouperGroupCommand extends RequirementsCommand {
     use FormatterTrait;
 
     private $trans;
+    private $initText;
 
     protected function configure() {
-        $this->trans = (new Text())->getText('group', 'command');
+        $this->trans = ($this->initText = new Text())->getText('group', 'command');
+        $this->initText = $this->initText->getText('init', 'command');
         $this->setName('grouper:group')
                 ->setDescription($this->trans['desc'])
                 ->setDefinition([
@@ -52,6 +54,8 @@ class GrouperGroupCommand extends RequirementsCommand {
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
+        $this->getIO()->write(Grouper::getLongVersion());
+
         $io = $this->getIO();
         $formatter = $this->getHelperSet()->get('formatter');
         $alert = new Alert($ss = new SymfonyStyle($input, $output));
@@ -59,15 +63,15 @@ class GrouperGroupCommand extends RequirementsCommand {
         if (!($grouper = new Grouper($input))->exists()) {
             $alert->warning('initiate', null, true);
         }
-        
+
         $group = strtolower($input->getArgument('name'));
         $action = strtolower($input->getArgument('action'));
 
-        if (!$grouper->hasGroup($group)) {
+        if ('create' != $action && !$grouper->hasGroup($group)) {
             $alert->error('group_not_found', [$group, $grouper->getName()]);
         }
 
-        if (!in_array($action, ['activate', 'deactivate', 'add', 'remove'])) {
+        if (!in_array($action, ['activate', 'deactivate', 'add', 'remove', 'create', 'delete'])) {
             $alert->error('action_not_found', $input->getArgument('action'));
         }
 
@@ -76,6 +80,24 @@ class GrouperGroupCommand extends RequirementsCommand {
             $formatter->formatBlock(sprintf($this->trans['action_' . $action], $group), 'bg=blue;fg=white', true),
             '',
         ));
+
+        if ('create' == $action) {
+            if (!preg_match('{^[a-z0-9_.-]+$}D', $group)) {
+                $this->alert->error('ask_name_exception', [$type, $name]);
+            }
+
+            if ($grouper->hasGroup($group)) {
+                $alert->error('group_exists', $group);
+            }
+
+            $description = $io->ask(
+                    $this->initText['ask_group_desc'] . PHP_EOL . '>'
+            );
+
+            $grouper->setGroup($group, ['description' => $description ?: '']);
+
+            $action = 'add';
+        }
 
         if ('activate' == $action || 'deactivate' == $action) {
             $groupDetail = $this->formatGroups($grouper, $group)[$group];
@@ -98,18 +120,37 @@ class GrouperGroupCommand extends RequirementsCommand {
             }
 
             // enabled for execute task
-            $grouper->setGroupEnabled($group, true)->save();
+            $grouper->setGroupActivated($group, true)->save();
+
+            if (!$activate) {
+                $taskOption = $grouper->getGroupTaskOption($group);
+                if ($taskOption['uninstall'] ?? false) {
+                    $uninstall = true;
+                    $packagesObject = [];
+                    $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+                    foreach ($grouper->getPackagesByGroup($group) as $package => $packageConfig) {
+                        if (!is_null($packageObject = $installedRepo->findPackage($package, '*'))) {
+                            $packagesObject[] = $packageObject;
+                        }
+                    }
+                }
+            }
 
             if (!Terminal::exec($exec, $grouper->getRootDir(), $io, array_keys($noInstalledPackage), $replace, false)) {
-                $grouper->setGroupEnabled($group, !$activate)->save();
+                $grouper->setGroupActivated($group, !$activate)->save();
                 $alert->error();
             }
 
             $task = new Task($this->getComposer(), $io, $input);
 
             if (!$activate) {
-                $task->runTasks($group, true);
-                $grouper->setGroupEnabled($group, $activate)->save();
+                if (isset($uninstall)) {
+                    foreach ($packagesObject as $package) {
+                        $task->runTasks($package, true);
+                    }
+                    $task->runTasks($group, true);
+                }
+                $grouper->setGroupActivated($group, $activate)->save();
             } else {
                 $task->runTasks($group);
             }
@@ -121,7 +162,7 @@ class GrouperGroupCommand extends RequirementsCommand {
                     $grouper->addPackage($group, $package);
                 }
             }
-        } else {
+        } elseif ('remove' == $action) {
             if (!$packages = $grouper->getPackagesByGroup($group)) {
                 $alert->warning('no_dependency', $group, true);
             }
@@ -133,6 +174,11 @@ class GrouperGroupCommand extends RequirementsCommand {
                 unset($packages[$package]);
                 $question = $this->trans['confirm_remove_another'];
             }
+        } elseif ('delete' == $action && $io->askConfirmation(sprintf($this->trans['action_' . $action], $group) . ' [<comment>yes</comment>]?' . PHP_EOL . '>')) {
+            if ($grouper->isGroupActivated($group)) {
+                $alert->error('delete_exception');
+            }
+            $grouper->removeGroup($group);
         }
 
         if (!$grouper->hasChanged()) {

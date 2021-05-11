@@ -33,6 +33,7 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  */
 class GrouperInitCommand extends RequirementsCommand {
 
+    private $grouper;
     private $rootDir;
     private $names;
     private $trans;
@@ -50,6 +51,8 @@ class GrouperInitCommand extends RequirementsCommand {
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
+        $this->getIO()->write(Grouper::getLongVersion());
+        
         $this->io = $this->getIO();
         $this->alert = new Alert(new SymfonyStyle($input, $output));
         $formatter = $this->getHelperSet()->get('formatter');
@@ -62,12 +65,12 @@ class GrouperInitCommand extends RequirementsCommand {
             '',
         ));
 
-        if (($grouper = new Grouper($input))->exists()) {
+        if (($this->grouper = new Grouper($input))->exists()) {
             $this->alert->warning('file_exists', 'grouper.json');
-            $grouper->reset();
+            $this->grouper->reset();
         }
 
-        $this->rootDir = $grouper->getRootDir();
+        $this->rootDir = $this->grouper->getRootDir();
 
         if ($grouperName = $input->getOption('name')) {
             if (!$this->nameValidator($grouperName, 'grouper')) {
@@ -79,7 +82,7 @@ class GrouperInitCommand extends RequirementsCommand {
             $grouperName = $this->askName('grouper');
         }
 
-        $grouper->setName($grouperName);
+        $this->grouper->setName($grouperName);
 
         while ($this->io->askConfirmation($this->trans['confirm_add_group_' . (isset($this->names[1]) ? 'another' : 'new')] . PHP_EOL . '>')) {
 
@@ -95,10 +98,10 @@ class GrouperInitCommand extends RequirementsCommand {
                 $data['require'] = $this->askRequirements($input, $output);
             }
 
-            $grouper->setGroup($groupName, array_merge(['description' => $description ?: ''], $data));
+            $this->grouper->setGroup($groupName, array_merge(['description' => $description ?: ''], $data));
         }
 
-        $json = JsonFile::encode($grouper->all());
+        $json = JsonFile::encode($this->grouper->all());
 
         $this->io->write(array('', $json, ''));
 
@@ -106,7 +109,7 @@ class GrouperInitCommand extends RequirementsCommand {
             $this->alert->error('command_aborted');
         }
 
-        $grouper->save();
+        $this->grouper->save();
 
         $this->alert->success('generate_json');
     }
@@ -115,9 +118,13 @@ class GrouperInitCommand extends RequirementsCommand {
         return strtolower(preg_replace('{(?:([a-z])([A-Z])|([A-Z])([A-Z][a-z]))}', '\\1\\3-\\2\\4', $dir));
     }
 
-    public function nameValidator(string $name, string $type = 'group'): bool {
+    private function nameValidator(string $name, string $type = 'group'): bool {
         if (!preg_match('{^[a-z0-9_.-]+$}D', $name)) {
             $this->alert->error('ask_name_exception', [$type, $name], false);
+            return false;
+        }
+        if ('group' == $type && $this->grouper->hasGroup($name)) {
+            $this->alert->error('group_exists', $name, false);
             return false;
         }
         return true;

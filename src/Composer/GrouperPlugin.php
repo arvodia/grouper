@@ -64,8 +64,8 @@ class GrouperPlugin implements PluginInterface, Capable, EventSubscriberInterfac
         return [
             PackageEvents::POST_PACKAGE_INSTALL => 'onPostPackage',
             PackageEvents::POST_PACKAGE_UPDATE => 'onPostPackage',
-            PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostPackage',
-//            ScriptEvents::POST_UPDATE_CMD => 'onPostUpdateCmd',
+                // PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostPackage',
+                // ScriptEvents::POST_UPDATE_CMD => 'onPostUpdateCmd',
         ];
     }
 

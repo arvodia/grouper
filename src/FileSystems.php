@@ -29,7 +29,7 @@ class FileSystems {
 
     private $rootDir;
     private $io;
-    private $overwrite = true;
+    private $overwrite = false;
 
     /**
      * exit if the file does not exist
@@ -39,6 +39,14 @@ class FileSystems {
     public function __construct(string $rootDir, IOInterface $io) {
         $this->rootDir = $rootDir;
         $this->io = $io;
+    }
+
+    public function getOverwrite(): bool {
+        return $this->overwrite;
+    }
+
+    public function setOverwrite(bool $overwrite): void {
+        $this->overwrite = $overwrite;
     }
 
     public function copyFiles(array $manifest, string $from) {
@@ -120,7 +128,7 @@ class FileSystems {
                     mkdir($targetPath);
                     $this->io->write(sprintf('  [Created] <fg=green>"%s"</>', $this->relativize($targetPath)));
                 }
-            } elseif (!file_exists($targetPath)) {
+            } elseif ($this->checkOverwrite($targetPath)) {
                 $this->copyFile($item, $targetPath);
             }
         }
@@ -132,7 +140,7 @@ class FileSystems {
         }
 
         if (!file_exists($source)) {
-            $this->io->error(sprintf('[Not exist] File : "%s"', $source));
+            $this->io->error(sprintf('[NOT EXIST] File : "%s"', $source));
             if (self::FORCE_EXIT) {
                 exit(1);
             }

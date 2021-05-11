@@ -2,5 +2,8 @@
     "ask_name_exception": "'The %1$s name \"%2$s\" is invalid, it should be lowercase,  corresponding to: [a-z0-9_.-]+'",
     "group_not_found": "The group name \"%1$s\" could not be found, in \"%2$s\" groups.",
     "action_not_found": "The action argument \"%s\" could not be found.",
-    "command_aborted": "Command aborted"
+    "command_aborted": "Command aborted",
+    "group_exists": "The group name \"%1$s\", already exists",
+    "delete_exception": "You must first deactivate the group to delete it.",
+    "run_tasks_exception": "You must first activate the group to run it."
 }

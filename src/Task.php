@@ -18,6 +18,7 @@ use Arvodia\Grouper\Console\Terminal;
 use Composer\Composer;
 use Composer\IO\IOInterface;
 use Composer\Package\PackageInterface;
+use Composer\Package\CompletePackage;
 use Symfony\Component\Console\Input\InputInterface;
 use MatthiasMullie\Minify\CSS;
 use MatthiasMullie\Minify\JS;
@@ -51,7 +52,7 @@ class Task {
             $this->rootDir = $grouper->getRootDir();
             $this->fileSystems = new FileSystems($this->rootDir, $io);
             foreach ($grouper->getGroups() as $group => $groupConfig) {
-                if ($grouper->getGroupEnabled($group)) {
+                if ($grouper->isGroupActivated($group)) {
                     if (isset($groupConfig['tasks'])) {
                         $this->groups['groups'][$group]['tasks'] = [$groupConfig['tasks']];
                     }
@@ -71,7 +72,7 @@ class Task {
 
     public function runTasks($toApply, bool $remove = false) {
         if ($this->groups) {
-            $type = $toApply instanceof PackageInterface ? 'packages' : 'groups';
+            $type = $toApply instanceof PackageInterface || $toApply instanceof CompletePackage ? 'packages' : 'groups';
             $name = 'groups' == $type ? $toApply : $toApply->getName();
             $packageDir = 'groups' == $type ? null : $this->composer->getInstallationManager()->getInstallPath($toApply);
             $from = 'groups' == $type ? $this->rootDir : $packageDir;
@@ -84,13 +85,14 @@ class Task {
                             $manifest[$source] = $dest;
                         }
                         if ($manifest) {
+                            $this->fileSystems->setOverwrite(str_ends_with($task, '-overwrite'));
                             if ($remove) {
                                 $this->fileSystems->removeFiles($manifest, $this->rootDir);
-                            } elseif ('file-mapping' == $task) {
+                            } elseif (str_starts_with($task, 'file-mapping')) {
                                 $this->fileSystems->copyFiles($manifest, $from);
-                            } elseif ('css-minifying' == $task) {
+                            } elseif (str_starts_with($task, 'css-minifying')) {
                                 $this->minifying('css', $manifest, $from);
-                            } elseif ('js-minifying' == $task) {
+                            } elseif (str_starts_with($task, 'js-minifying')) {
                                 $this->minifying('js', $manifest, $from);
                             }
                         }
@@ -104,9 +106,10 @@ class Task {
         $minifierBin = $this->vendorDir . '/bin/minify' . $minifier;
 
         if (!file_exists($minifierBin)) {
-            $this->io->warning('[WARNING] The "Minify" bin is part of the MatthiasMullie, which is not installed/enabled; try running "composer require matthiasmullie/minify".');
-            $this->io->alert('[Fake] Create Minify Files');
+            $this->io->warning('  [WARNING] The "Minify" bin is part of the MatthiasMullie, which is not installed/enabled; try running "composer require matthiasmullie/minify".');
+            $this->io->alert('  [Fake] Create Minify Files');
             $this->fileSystems->copyFiles($manifest, $from);
+            $this->io->alert('  [END][Fake]');
             return;
         }
 
@@ -131,9 +134,9 @@ class Task {
 
                 if (Terminal::exec($exec, null, null, null, null, false)) {
                     @chmod($targetPath, fileperms($targetPath) | (fileperms($sourcePath) & 0111));
-                    $this->io->write(sprintf('  [Created] min : <fg=green>"%s"</>', $this->fileSystems->relativize($target)));
+                    $this->io->write(sprintf('  [Created][MIN] : <fg=green>"%s"</>', $this->fileSystems->relativize($target)));
                 } else {
-                    $this->io->error(sprintf('  [Not Copied] Minify File : "%s"', $source));
+                    $this->io->error(sprintf('  [Not Copied][MIN] File : "%s"', $source));
                     if (FileSystems::FORCE_EXIT) {
                         exit(1);
                     }
@@ -141,7 +144,7 @@ class Task {
                     continue;
                 }
             } else {
-                $this->io->error(sprintf('[Not exist] File : "%s"', $sourcePath));
+                $this->io->error(sprintf('  [NOT EXIST] File : "%s"', $sourcePath));
                 if (FileSystems::FORCE_EXIT) {
                     exit(1);
                 }

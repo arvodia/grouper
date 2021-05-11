@@ -26,15 +26,14 @@ use Composer\Json\JsonFile;
 class Text {
 
     private $locale = 'en';
-
-    public function __construct(string $locale = 'en') {
-        $this->locale = $locale;
-    }
-
     private $messages = [
         'alert' => null,
         'command' => null,
     ];
+
+    public function __construct(string $locale = 'en') {
+        $this->locale = $locale;
+    }
 
     public function getText(string $domain = null, string $category = 'alert'): ?array {
         if (is_null($this->messages[$category])) {

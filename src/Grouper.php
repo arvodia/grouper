@@ -27,6 +27,10 @@ use Symfony\Component\Console\Input\InputInterface;
  */
 class Grouper {
 
+    const NAME = 'Grouper';
+    const VERSION = '1.0.4';
+    const VERSION_NAME = 'started';
+
     private $json;
     private $grouper = [];
     private $changed = false;
@@ -40,6 +44,15 @@ class Grouper {
         }
         $this->grouper['name'] = $this->grouper['name'] ?? '';
         $this->grouper['groups'] = $this->grouper['groups'] ?? [];
+    }
+
+    public static function getLongVersion() {
+        return sprintf(
+                '<info>%s</info> version <comment>%s</comment> (<comment>%s</comment>)',
+                self::NAME,
+                self::VERSION,
+                self::VERSION_NAME,
+        );
     }
 
     public function getRootDir(): string {
@@ -71,13 +84,13 @@ class Grouper {
         return $this->grouper['groups'][$name] ?? null;
     }
 
-    public function getGroupEnabled(string $name): bool {
-        return $this->grouper['groups'][$name]['enabled'] ?? false;
+    public function isGroupActivated(string $name): bool {
+        return $this->grouper['groups'][$name]['activated'] ?? false;
     }
 
-    public function setGroupEnabled(string $name, bool $enabled): self {
+    public function setGroupActivated(string $name, bool $enabled): self {
         if (\array_key_exists($name, $this->grouper['groups'])) {
-            $this->grouper['groups'][$name]['enabled'] = $enabled;
+            $this->grouper['groups'][$name]['activated'] = $enabled;
             $this->changed = true;
         }
         return $this;
@@ -97,6 +110,33 @@ class Grouper {
     public function setGroup(string $name, array $data = []): self {
         if (!\array_key_exists($name, $this->grouper['groups']) || $data !== $this->grouper['groups'][$name]) {
             $this->grouper['groups'][$name] = $data;
+            $this->changed = true;
+        }
+        return $this;
+    }
+
+    public function getGroupTaskOption(string $group): array {
+        return $this->grouper['groups'][$group]['tasks-option'] ?? [];
+    }
+
+    public function setGroupTaskOption(string $group, $option): self {
+        $this->grouper['groups'][$group]['tasks-option'] = $option;
+        $this->changed = true;
+        return $this;
+    }
+
+    public function addGroupTask(string $group, string $task, array $data = []): self {
+        if (\array_key_exists($group, $this->grouper['groups'])) {
+            $current = $this->grouper['groups'][$group]['tasks'][$task] ?? [];
+            $this->grouper['groups'][$group]['tasks'][$task] = array_merge($current, [$data]);
+            $this->changed = true;
+        }
+        return $this;
+    }
+
+    public function resetGroupTask(string $group): self {
+        if (isset($this->grouper['groups'][$group]['tasks'])) {
+            unset($this->grouper['groups'][$group]['tasks']);
             $this->changed = true;
         }
         return $this;
@@ -124,25 +164,8 @@ class Grouper {
         return $this;
     }
 
-    public function addGroupTask(string $group, string $task, array $data = []): self {
-        if (\array_key_exists($group, $this->grouper['groups'])) {
-            $current = $this->grouper['groups'][$group]['tasks'][$task] ?? [];
-            $this->grouper['groups'][$group]['tasks'][$task] = array_merge($current, [$data]);
-            $this->changed = true;
-        }
-        return $this;
-    }
-
-    public function resetGroupTask(string $group): self {
-        if (isset($this->grouper['groups'][$group]['tasks'])) {
-            unset($this->grouper['groups'][$group]['tasks']);
-            $this->changed = true;
-        }
-        return $this;
-    }
-
-    public function getPackagesByGroup(string $group): ?array {
-        return $this->grouper['groups'][$group]['require'] ?? null;
+    public function getPackagesByGroup(string $group): array {
+        return $this->grouper['groups'][$group]['require'] ?? [];
     }
 
     public function addPackage(string $group, $package = []): self {

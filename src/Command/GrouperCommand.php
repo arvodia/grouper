@@ -53,6 +53,8 @@ class GrouperCommand extends BaseCommand {
     }
 
     protected function execute(InputInterface $input, OutputInterface $output) {
+        $this->getIO()->write(Grouper::getLongVersion());
+        
         $this->io = $this->getIO();
         $formatter = $this->getHelperSet()->get('formatter');
         $alert = new Alert(new SymfonyStyle($input, $output));
@@ -75,6 +77,13 @@ class GrouperCommand extends BaseCommand {
             '',
         ));
 
+        if (!$this->io->isVerbose() || !$this->io->isVeryVerbose()) {
+            $this->io->writeError([
+                'Run command with <info>-v</info> or <info>-vv</info> to see more details',
+                '',
+            ]);
+        }
+
         if ($input->getOption('raw')) {
             $this->showRawList($groups);
         } else {
@@ -94,12 +103,23 @@ class GrouperCommand extends BaseCommand {
         foreach ($groups as $group => $groupConfigs) {
             $this->io->write('<fg=yellow>' . $group . '</>', true);
             $paramsPad = ($this->getMaxStrlen(array_keys($groupConfigs)) + 2);
-            asort($groupConfigs);
+            ksort($groupConfigs);
+            if (isset($groupConfigs['require'])) {
+                $tmp = $groupConfigs['require'];
+                unset($groupConfigs['require']);
+                $groupConfigs['require'] = $tmp;
+            }
             foreach ($groupConfigs as $param => $values) {
-                $this->io->write(str_repeat(" ", 2) . str_pad($param, $paramsPad, " ") . ': ' . (is_array($values) ? '' : $values), true);
+                $this->io->write(str_repeat(" ", 2) . str_pad($param, $paramsPad, " ") . ': ' . (is_array($values) ? (!$this->io->isVerbose() ? count($values) : '') : (is_bool($values) ? ($values ? 'true' : 'false') : $values)), true);
+                if (!$this->io->isVerbose()) {
+                    continue;
+                }
                 if (is_array($values)) {
                     foreach ($values as $key => $value) {
-                        $this->io->write(str_repeat(" ", 4) . '<fg=green>' . $key . ' :</>' . (is_array($value) ? '' : $value), true);
+                        $this->io->write(str_repeat(" ", 4) . '<fg=green>' . str_pad($key, $paramsPad - 2, " ") . ': </>' . (is_array($value) ? '' : (is_bool($value) ? ($value ? 'true' : 'false') : $value) ), true);
+                        if (!$this->io->isVeryVerbose()) {
+                            continue;
+                        }
                         if (is_array($value)) {
                             $valuePad = ($this->getMaxStrlen(array_keys($value)) + 2);
                             foreach ($value as $k => $val) {
