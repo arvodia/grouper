@@ -85,11 +85,11 @@ class GrouperPlugin implements PluginInterface, Capable, EventSubscriberInterfac
     }
 
     public function onPostInstallCmd(Event $event) {
-        $this->task->runGroupsTasks();
+        $this->task->runGroupsTasks('install');
     }
 
     public function onPostUpdateCmd(Event $event) {
-        $this->task->runGroupsTasks('install');
+        $this->task->runGroupsTasks();
     }
 
 }
