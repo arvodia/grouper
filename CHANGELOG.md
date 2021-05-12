@@ -1,6 +1,6 @@
 CHANGELOG
 =========
-1.0.7
+1.0.8
 -----
 * Code correction
 * Rename method isPackagesUpdated() to isPackagesChecked()

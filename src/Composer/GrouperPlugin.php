@@ -79,9 +79,7 @@ class GrouperPlugin implements PluginInterface, Capable, EventSubscriberInterfac
             $package = $operation->getPackage();
         }
         if ($this->task->hasPackageTask($package->getName())) {
-            if ($operation instanceof UpdateOperation) {
-                $this->task->setPackagesChecked($package->getName());
-            }
+            $this->task->setPackagesChecked($package->getName());
             $this->task->runTasks($package, $operation instanceof UninstallOperation);
         }
     }
