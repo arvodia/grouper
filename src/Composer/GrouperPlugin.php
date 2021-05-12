@@ -66,7 +66,8 @@ class GrouperPlugin implements PluginInterface, Capable, EventSubscriberInterfac
             PackageEvents::POST_PACKAGE_UPDATE => 'onPostPackage',
             // run uninstall task, executed by deactivate group
             // PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostPackage',
-            ScriptEvents::POST_UPDATE_CMD => 'onPostUpdateCmd',
+            ScriptEvents::POST_INSTALL_CMD => 'onPostCmd',
+            ScriptEvents::POST_UPDATE_CMD => 'onPostCmd',
         ];
     }
 
@@ -79,7 +80,7 @@ class GrouperPlugin implements PluginInterface, Capable, EventSubscriberInterfac
         }
         if ($this->task->hasPackageTask($package->getName())) {
             if ($operation instanceof UpdateOperation) {
-                $this->task->setPackagesUpdated($package->getName());
+                $this->task->setPackagesChecked($package->getName());
             }
             $this->task->runTasks($package, $operation instanceof UninstallOperation);
         }
@@ -90,7 +91,7 @@ class GrouperPlugin implements PluginInterface, Capable, EventSubscriberInterfac
      * @var ScriptEvents
      * @param Event $event
      */
-    public function onPostUpdateCmd(Event $event) {
+    public function onPostCmd(Event $event) {
         $this->task->runGroupsTasks();
     }
 

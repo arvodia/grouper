@@ -1,5 +1,11 @@
 CHANGELOG
 =========
+1.0.7
+-----
+* Code correction
+* Rename method isPackagesUpdated() to isPackagesChecked()
+* Run groups task after POST_INSTALL_CMD
+
 1.0.5
 -----
 * Adding option Run unstall group tasks and these packages for the task command

@@ -40,7 +40,7 @@ class Task {
     private $io;
     private $groups = [];
     private $fileSystems;
-    private $packagesUpdated;
+    private $packagesChecked;
     private $grouper;
 
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input = null) {
@@ -69,14 +69,14 @@ class Task {
         return isset($this->groups['packages'][$name]['tasks']);
     }
 
-    public function setPackagesUpdated(string $package): void {
-        $this->packagesUpdated[$package] = true;
+    public function setPackagesChecked(string $package): void {
+        $this->packagesChecked[$package] = true;
     }
 
     public function runGroupsTasks() {
         foreach ($this->groups['groups'] ?? [] as $group => $values) {
             foreach ($this->grouper->getPackagesByGroup($group) as $package => $value) {
-                if ($this->isPackagesUpdated($package)) {
+                if ($this->isPackagesChecked($package)) {
                     $this->runTasks($group);
                     break;
                 }
@@ -122,8 +122,8 @@ class Task {
         }
     }
 
-    private function isPackagesUpdated(string $package): bool {
-        return $this->packagesUpdated[$package] ?? false;
+    private function isPackagesChecked(string $package): bool {
+        return $this->packagesChecked[$package] ?? false;
     }
 
     private function minifying(string $minifier, array $manifest, string $from): void {

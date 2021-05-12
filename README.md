@@ -116,7 +116,7 @@ They are executed if the group is activated and during the following events :
   
 ### Groups Tasks
 They are executed only at the end of the activation of a group.
-They are only executed at the end of the update post if one of these packages has been updated.
+They are only executed at the end of the post update|install if one of these packages has been checked.
 ### Tasks Option
 For instemp only one option `uninstall` if it is enabled, after disabling group, all added files or folders will be deleted. 
 	
