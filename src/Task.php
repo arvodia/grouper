@@ -74,7 +74,7 @@ class Task {
     }
 
     public function runGroupsTasks() {
-        foreach ($this->groups['groups'] as $group => $values) {
+        foreach ($this->groups['groups'] ?? [] as $group => $values) {
             foreach ($this->grouper->getPackagesByGroup($group) as $package => $value) {
                 if ($this->isPackagesUpdated($package)) {
                     $this->runTasks($group);
