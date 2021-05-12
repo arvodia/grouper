@@ -73,10 +73,10 @@ class Task {
         $this->packagesChecked[$package] = true;
     }
 
-    public function runGroupsTasks() {
+    public function runGroupsTasks(string $event = 'update') {
         foreach ($this->groups['groups'] ?? [] as $group => $values) {
             foreach ($this->grouper->getPackagesByGroup($group) as $package => $value) {
-                if ($this->isPackagesChecked($package)) {
+                if ('install' == $event || $this->isPackagesChecked($package)) {
                     $this->runTasks($group);
                     break;
                 }
