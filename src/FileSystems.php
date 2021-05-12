@@ -68,6 +68,10 @@ class FileSystems {
 
     public function removeFiles(array $manifest, string $workDir) {
         foreach ($manifest as $source => $target) {
+            if (is_array($target)) {
+                $this->removeFiles([$source => $source], $workDir);
+                continue;
+            }
             $targetPath = $this->concatenate([$workDir, $target]);
             if (is_dir($targetPath)) {
                 $this->removeFilesFromDir($targetPath);

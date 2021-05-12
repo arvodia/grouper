@@ -2,6 +2,10 @@
 # Composer plugin, package and tasks manager by group
 Grouper is a composer plug-in that allows you to place the packages in a group, to install or uninstall the packages of a group with a single command.
 
+Grouper scripts are called tasks they can copy files, directories or shrink css and js files.
+
+The advantage of grouper with other CSS and JavaScript supports, there is no need to run any additional script. resource files are automatically updated and minified after `composer update`
+
 ## Contents
  - [Feature](#feature)
  - [Installation](#installation)
@@ -112,6 +116,7 @@ They are executed if the group is activated and during the following events :
   
 ### Groups Tasks
 They are executed only at the end of the activation of a group.
+They are only executed at the end of the update post if one of these packages has been updated.
 ### Tasks Option
 For instemp only one option `uninstall` if it is enabled, after disabling group, all added files or folders will be deleted. 
 	
@@ -124,6 +129,7 @@ The configuration file grouper.json, it will be deleted if you will uninstall gr
 ## Changelog
 A changelog, the changelog, the list of changes, presented in descending order of changes, and grouped by version.
 link : [CHANGELOG](https://github.com/arvodia/grouper/blob/main/CHANGELOG.md "CHANGELOG")
+From version 1.0.5 the commit text represents the working version.
 
 ## Git clone
 ```

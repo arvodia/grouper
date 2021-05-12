@@ -37,7 +37,8 @@ class Terminal {
                             $buffer = str_replace($search, $replace, $buffer);
                         }
                         $buffer = preg_replace(['#\[(.*)\]#U', '#\((.*)\)#U'], ['[<fg=yellow>$1</>]', '(<fg=yellow>$1</>)'], $buffer);
-                        $buffer = str_replace('[<fg=yellow>NOT EXIST</>]', '<fg=red>[NOT EXIST]</>', $buffer);
+                        $buffer = str_replace('[<fg=yellow>NOT EXIST</>]', '[<fg=red>NOT EXIST</>]', $buffer);
+                        $buffer = str_replace('[<fg=yellow>Not Copied</>]', '[<fg=red>Not Copied</>]', $buffer);
                         $io->write($buffer, false);
                     }
                 }) != 0) {

@@ -53,6 +53,7 @@ class GrouperTaskCommand extends BaseCommand {
                     new InputArgument('name', InputArgument::REQUIRED, $this->trans['argument_name']),
                 ])
                 ->addOption('run', 'r', InputOption::VALUE_NONE, $this->trans['option_run'])
+                ->addOption('uninstall', 'u', InputOption::VALUE_NONE, $this->trans['option_run_uninstall'])
                 ->addOption('delete', null, InputOption::VALUE_NONE, $this->trans['option_delete'])
         ;
     }
@@ -82,7 +83,7 @@ class GrouperTaskCommand extends BaseCommand {
 
         $choices = array_merge([0 => $group], array_keys($grouper->getPackagesByGroup($group)));
 
-        if ($input->getOption('run')) {
+        if ($input->getOption('run') || $input->getOption('uninstall')) {
             if (!$grouper->isGroupActivated($group)) {
                 $alert->error('run_tasks_exception');
             }
@@ -93,12 +94,12 @@ class GrouperTaskCommand extends BaseCommand {
             $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
             foreach ($grouper->getPackagesByGroup($group) as $package => $packageConfig) {
                 if (!is_null($packageObject = $installedRepo->findPackage($package, '*'))) {
-                    $task->runTasks($packageObject);
+                    $task->runTasks($packageObject, $input->getOption('uninstall'));
                 }
             }
 
             $io->write(sprintf('Run %s group Tasks...', $group));
-            $task->runTasks($group);
+            $task->runTasks($group, $input->getOption('uninstall'));
             $alert->success();
         } elseif ($input->getOption('delete')) {
             $toApply = $ss->choice($this->trans['question_add_delete'], $choices);
@@ -121,7 +122,14 @@ class GrouperTaskCommand extends BaseCommand {
                 $task = $ss->choice($this->trans['question_type_task'], self::TASKS);
                 $isMinify = (false === $isMinify && str_ends_with($task, 'minifying') ? true : false);
                 $compared = strpos($toApply, '/') ? 'package directory' : 'composer.json';
-                $source = $this->askPath($io, sprintf($this->trans['question_add_source'], $compared));
+                $source = [];
+                $source[] = $this->askPath($io, sprintf($this->trans['question_add_source'], $compared));
+                if (strpos($task, 'minifying')) {
+                    while ($io->askConfirmation($this->trans['confirm_add_joine'] . PHP_EOL . '>')) {
+                        $source[] = $this->askPath($io, sprintf($this->trans['question_add_source'], $compared));
+                    }
+                }
+                $source = count($source) == 1 ? $source[0] : $source;
                 $dest = $this->askPath($io, sprintf($this->trans['question_add_destination'], $compared));
                 if (strpos($toApply, '/')) {
                     $grouper->addPackageTask($group, $toApply, $task, [$source, $dest]);

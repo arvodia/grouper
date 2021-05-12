@@ -14,41 +14,40 @@ namespace Arvodia\Grouper;
 
 use Arvodia\Grouper\FileSystems;
 use Arvodia\Grouper\Grouper;
-use Arvodia\Grouper\Console\Terminal;
 use Composer\Composer;
 use Composer\IO\IOInterface;
-use Composer\Package\PackageInterface;
 use Composer\Package\CompletePackage;
+use Composer\Package\PackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
-use MatthiasMullie\Minify\CSS;
-use MatthiasMullie\Minify\JS;
+use function str_ends_with;
+use function str_starts_with;
 
 /**
  * Description
- * 
+ *
  * @name    : Task
- * @see     : 
- * @todo    : 
+ * @see     :
+ * @todo    :
  *
  * @author Sidi Said Redouane <sidisaidredouane@live.com>
- * 
- * @var CSS
- * @var JS
  */
 class Task {
 
     private $composer;
     private $rootDir;
     private $vendorDir;
+    private $minify;
     private $io;
     private $groups = [];
     private $fileSystems;
+    private $packagesUpdated;
+    private $grouper;
 
     public function __construct(Composer $composer, IOInterface $io, InputInterface $input = null) {
         $this->composer = $composer;
         $this->io = $io;
         $this->vendorDir = rtrim($composer->getConfig()->get('vendor-dir'), '/');
-        if (($grouper = new Grouper($input))->exists()) {
+        if (($this->grouper = $grouper = new Grouper($input))->exists()) {
             $this->rootDir = $grouper->getRootDir();
             $this->fileSystems = new FileSystems($this->rootDir, $io);
             foreach ($grouper->getGroups() as $group => $groupConfig) {
@@ -70,7 +69,22 @@ class Task {
         return isset($this->groups['packages'][$name]['tasks']);
     }
 
-    public function runTasks($toApply, bool $remove = false) {
+    public function setPackagesUpdated(string $package): void {
+        $this->packagesUpdated[$package] = true;
+    }
+
+    public function runGroupsTasks() {
+        foreach ($this->groups['groups'] as $group => $values) {
+            foreach ($this->grouper->getPackagesByGroup($group) as $package => $value) {
+                if ($this->isPackagesUpdated($package)) {
+                    $this->runTasks($group);
+                    break;
+                }
+            }
+        }
+    }
+
+    public function runTasks($toApply, bool $remove = false): void {
         if ($this->groups) {
             $type = $toApply instanceof PackageInterface || $toApply instanceof CompletePackage ? 'packages' : 'groups';
             $name = 'groups' == $type ? $toApply : $toApply->getName();
@@ -82,6 +96,12 @@ class Task {
                         $manifest = [];
                         foreach ($items as $item) {
                             list($source, $dest) = $item;
+                            if (is_array($source)) {
+                                // swap
+                                $destTmp = $dest;
+                                $dest = $source;
+                                $source = $destTmp;
+                            }
                             $manifest[$source] = $dest;
                         }
                         if ($manifest) {
@@ -102,56 +122,98 @@ class Task {
         }
     }
 
-    private function minifying(string $minifier, array $manifest, string $from) {
-        $minifierBin = $this->vendorDir . '/bin/minify' . $minifier;
+    private function isPackagesUpdated(string $package): bool {
+        return $this->packagesUpdated[$package] ?? false;
+    }
 
-        if (!file_exists($minifierBin)) {
-            $this->io->warning('  [WARNING] The "Minify" bin is part of the MatthiasMullie, which is not installed/enabled; try running "composer require matthiasmullie/minify".');
-            $this->io->alert('  [Fake] Create Minify Files');
-            $this->fileSystems->copyFiles($manifest, $from);
-            $this->io->alert('  [END][Fake]');
-            return;
+    private function minifying(string $minifier, array $manifest, string $from): void {
+
+        if (is_null($this->getMinify($minifier))) {
+            $this->io->alert('  [WARNING] The "Minify" class is part of the MatthiasMullie, which is not installed/enabled; try running "composer require matthiasmullie/minify".');
         }
-
         $to = $this->rootDir;
         foreach ($manifest as $source => $target) {
-
-            $sourcePath = $this->fileSystems->concatenate([$from, $source]);
-            $targetPath = $this->fileSystems->concatenate([$to, $target]);
-
-            if (!$this->fileSystems->checkOverwrite($targetPath)) {
-                unset($manifest[$source]);
-                continue;
+            if (is_array($target)) {
+                if (is_null($this->getMinify($minifier))) {
+                    $this->io->alert('  [ERROR] Please install "composer require matthiasmullie/minify".');
+                    exit(1);
+                }
+                // swap
+                $targetPath = $this->fileSystems->concatenate([$to, $source]);
+                $sourcesPaths = [];
+                foreach ($target as $path) {
+                    if (!$this->fileSystems->checkOverwrite($path = $this->fileSystems->concatenate([$from, $path]))) {
+                        continue;
+                    }
+                    $sourcesPaths[] = $path;
+                }
+            } else {
+                if (is_null($this->getMinify($minifier))) {
+                    $this->io->warning('  [Minify][Fake][Start] Create Fake Minify Files');
+                    $this->fileSystems->copyFiles([$source => $target], $from);
+                    $this->io->warning('  [Minify][Fake][End]');
+                    continue;
+                }
+                $sourcePath = $this->fileSystems->concatenate([$from, $source]);
+                $targetPath = $this->fileSystems->concatenate([$to, $target]);
+                if (!$this->fileSystems->checkOverwrite($targetPath)) {
+                    continue;
+                }
+                $sourcesPaths = [$sourcePath];
             }
 
-            if (is_file($sourcePath)) {
+            if (!is_dir(\dirname($targetPath))) {
+                mkdir(\dirname($targetPath), 0777, true);
+                $this->io->write(sprintf('  [Created] <fg=green>"%s"</>', $this->fileSystems->relativize(\dirname($targetPath))));
+            }
 
-                if (!is_dir(\dirname($targetPath))) {
-                    mkdir(\dirname($targetPath), 0777, true);
-                    $this->io->write(sprintf('  [Created] <fg=green>"%s"</>', $this->fileSystems->relativize(\dirname($targetPath))));
-                }
-                $exec = $minifierBin . ' ' . $sourcePath . ' > ' . $targetPath;
+            $minifierClass = 'MatthiasMullie\\Minify\\' . strtoupper($minifier);
+            $minifierClass = new $minifierClass();
+            $hasMinified = null;
+            foreach ($sourcesPaths as $sourcePath) {
 
-                if (Terminal::exec($exec, null, null, null, null, false)) {
-                    @chmod($targetPath, fileperms($targetPath) | (fileperms($sourcePath) & 0111));
-                    $this->io->write(sprintf('  [Created][MIN] : <fg=green>"%s"</>', $this->fileSystems->relativize($target)));
-                } else {
-                    $this->io->error(sprintf('  [Not Copied][MIN] File : "%s"', $source));
+                if (!is_file($sourcePath)) {
+                    $this->io->error(sprintf('  [NOT EXIST] File : "%s"', $sourcePath));
                     if (FileSystems::FORCE_EXIT) {
                         exit(1);
                     }
-                    unset($manifest[$source]);
                     continue;
                 }
-            } else {
-                $this->io->error(sprintf('  [NOT EXIST] File : "%s"', $sourcePath));
-                if (FileSystems::FORCE_EXIT) {
-                    exit(1);
+                $hasMinified = $hasMinified ?: true;
+                $minifierClass->add($sourcePath);
+                $this->io->write(sprintf('  [Minify][Add]' . (is_array($target) ? '[Joined]' : '') . ' : <fg=green>"%s"</>', $this->fileSystems->relativize($sourcePath)));
+            }
+
+            if ($hasMinified) {
+                $minifierClass->minify($targetPath);
+                if (is_file($targetPath)) {
+                    $this->io->write(sprintf('  [Minify][Created] : <fg=green>"%s"</>', $this->fileSystems->relativize($targetPath)));
+                } else {
+                    foreach ($sourcesPaths as $sourcePath) {
+                        $this->io->error(sprintf('  [Minify][Not Copied] File : "%s"', $this->fileSystems->relativize($sourcePath)));
+                        if (FileSystems::FORCE_EXIT) {
+                            exit(1);
+                        }
+                    }
                 }
-                unset($manifest[$source]);
-                continue;
             }
         }
+    }
+
+    private function getMinify(string $type): ?string {
+        if (is_null($this->minify)) {
+            $this->minify = [];
+            if (is_file($this->vendorDir . '/autoload.php')) {
+                require_once $this->vendorDir . '/autoload.php';
+                if (class_exists('MatthiasMullie\\Minify\\CSS')) {
+                    $this->minify['css'] = true;
+                }
+                if (class_exists('MatthiasMullie\\Minify\\JS')) {
+                    $this->minify['js'] = true;
+                }
+            }
+        }
+        return $this->minify[$type] ?? null;
     }
 
 }
