@@ -41,7 +41,7 @@ trait FormatterTrait {
                 ];
             }
             $groups[$group]['status'] = empty($groupStatus) || in_array('no installed', $groupStatus) ? 'disable' : 'enabled';
-            if (!is_null($grouper->isGroupActivated($group)) && $grouper->isGroupActivated($group) !== ('enabled' == $groups[$group]['status'] ? true : false)) {
+            if ($groups[$group]['require'] && !is_null($grouper->isGroupActivated($group)) && $grouper->isGroupActivated($group) !== ('enabled' == $groups[$group]['status'] ? true : false)) {
                 $this->getIO()->alert(sprintf('group "%1$s" in grouper.json "%2$s" but these dependencies are "%3$s", use "composer grouper:groups %1$s -vv" for more detail.', $group, $grouper->isGroupActivated($group) ? 'enabled' : 'disable', $groups[$group]['status']));
             }
             if ($enabled && 'disable' == $groups[$group]['status']) {
