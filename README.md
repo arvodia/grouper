@@ -38,10 +38,6 @@ Integrate grouper into your project with composer.
 ````
 composer require arvodia/grouper
 ````
-if you want to use minification tasks add:
-````
-composer require matthiasmullie/minify
-````
 initialize grouper
 ````
 composer grouper:init
@@ -54,7 +50,6 @@ You can also do a lot of other things with grouping.
 install grouper and minify
 ````
 composer require arvodia/grouper
-composer require matthiasmullie/minify
 ````
 ### Step 2
 add repositories to your project, dans le fichier composer. json add these lines :

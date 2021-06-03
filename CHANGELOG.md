@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+1.1.1
+-----
+* Add matthiasmullie/minify the composing dependencies
+
 1.1.0
 -----
 * Code correction

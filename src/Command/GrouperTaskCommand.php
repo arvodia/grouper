@@ -109,7 +109,7 @@ class GrouperTaskCommand extends BaseCommand {
                 $grouper->resetGroupTask($group);
             }
         } else {
-            $isMinify = false;
+            $isMinify = null;
 
             $taskOption = $grouper->getGroupTaskOption($group);
             if (!array_key_exists('uninstall', $taskOption)) {
@@ -120,7 +120,7 @@ class GrouperTaskCommand extends BaseCommand {
             while (!isset($toApply) || $io->askConfirmation($this->trans['confirm_add_anothe_task'] . PHP_EOL . '>')) {
                 $toApply = $ss->choice($this->trans['question_add_task'], $choices);
                 $task = $ss->choice($this->trans['question_type_task'], self::TASKS);
-                $isMinify = (false === $isMinify && str_ends_with($task, 'minifying') ? true : false);
+                $isMinify = $isMinify ?: str_ends_with($task, 'minifying');
                 $compared = strpos($toApply, '/') ? 'package directory' : 'composer.json';
                 $source = [];
                 $source[] = $this->askPath($io, sprintf($this->trans['question_add_source'], $compared));
