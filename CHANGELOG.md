@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+1.1.2
+-----
+* Add matthiasmullie/minify the composing autoload
+
 1.1.1
 -----
 * Add matthiasmullie/minify the composing dependencies

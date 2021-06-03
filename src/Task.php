@@ -203,15 +203,15 @@ class Task {
     private function getMinify(string $type): ?string {
         if (is_null($this->minify)) {
             $this->minify = [];
-            if (is_file($this->vendorDir . '/autoload.php')) {
+            if (!class_exists('MatthiasMullie\\Minify\\CSS') && is_file($this->vendorDir . '/autoload.php')) {
                 require_once $this->vendorDir . '/autoload.php';
-                if (class_exists('MatthiasMullie\\Minify\\CSS')) {
-                    $this->minify['css'] = true;
-                }
-                if (class_exists('MatthiasMullie\\Minify\\JS')) {
-                    $this->minify['js'] = true;
-                }
             }
+        }
+        if (class_exists('MatthiasMullie\\Minify\\CSS')) {
+            $this->minify['css'] = true;
+        }
+        if (class_exists('MatthiasMullie\\Minify\\JS')) {
+            $this->minify['js'] = true;
         }
         return $this->minify[$type] ?? null;
     }
