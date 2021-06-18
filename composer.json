@@ -25,8 +25,7 @@
             "Arvodia\\Grouper\\": "src",
             "MatthiasMullie\\Minify\\": "../../matthiasmullie/minify/src",
             "MatthiasMullie\\PathConverter\\": "../../matthiasmullie/minify/src"
-        },
-        "files": ["src/Polyfills.php"]
+        }
     },
     "extra": {
         "class": "Arvodia\\Grouper\\Composer\\GrouperPlugin"

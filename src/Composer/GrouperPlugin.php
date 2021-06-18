@@ -41,6 +41,7 @@ class GrouperPlugin implements PluginInterface, Capable, EventSubscriberInterfac
     private $task;
 
     public function activate(Composer $composer, IOInterface $io) {
+        require_once dirname(__DIR__) . '/Polyfills.php';
         $this->task = new Task($composer, $io);
     }
 

@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+1.1.4
+-----
+* Remove the polyfills from the composer file and make an inclusion in the activate() function of the plugin
+
 1.1.3
 -----
 * Added the automatic file inclusion mechanism. This is useful because PHP functions cannot be loaded automatically by PHP.

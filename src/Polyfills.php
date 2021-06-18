@@ -10,8 +10,6 @@
  * @update  : 18 juin. 2021
  */
 
-namespace Arvodia\Grouper;
-
 /**
  * Description
  * 
