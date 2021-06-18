@@ -3,6 +3,7 @@ CHANGELOG
 1.1.3
 -----
 * Added the automatic file inclusion mechanism. This is useful because PHP functions cannot be loaded automatically by PHP.
+* Added Polyfills : str_starts_with and str_ends_with
 
 1.1.2
 -----
