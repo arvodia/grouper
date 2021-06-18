@@ -28,7 +28,7 @@ use Symfony\Component\Console\Input\InputInterface;
 class Grouper {
 
     const NAME = 'Grouper';
-    const VERSION = '1.1.2';
+    const VERSION = '1.1.3';
     const VERSION_NAME = 'started';
 
     private $json;

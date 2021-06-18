@@ -1,12 +1,16 @@
 CHANGELOG
 =========
+1.1.3
+-----
+* Added the automatic file inclusion mechanism. This is useful because PHP functions cannot be loaded automatically by PHP.
+
 1.1.2
 -----
-* Add matthiasmullie/minify the composing autoload
+* Added matthiasmullie/minify in the composing autoload
 
 1.1.1
 -----
-* Add matthiasmullie/minify the composing dependencies
+* Added matthiasmullie/minify in the composing dependencies
 
 1.1.0
 -----
