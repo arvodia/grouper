@@ -7,7 +7,7 @@
  * @project : Webfony
  * @date    : 2021
  * @license : tous droits réservés
- * @update  : 18 juin 2021
+ * @update  : 18 juin. 2021
  */
 
 namespace Arvodia\Grouper;
