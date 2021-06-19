@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+1.1.5
+-----
+* Code correction in polyfills
+
 1.1.4
 -----
 * Remove the polyfills from the composer file and make an inclusion in the activate() function of the plugin
