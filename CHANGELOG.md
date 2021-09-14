@@ -1,5 +1,9 @@
 CHANGELOG
 =========
+1.1.6
+-----
+* Uninstall files when uninstalling a package instead of disabling a group 
+
 1.1.5
 -----
 * Code correction in polyfills

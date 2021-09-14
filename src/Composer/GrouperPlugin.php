@@ -65,8 +65,12 @@ class GrouperPlugin implements PluginInterface, Capable, EventSubscriberInterfac
         return [
             PackageEvents::POST_PACKAGE_INSTALL => 'onPostPackage',
             PackageEvents::POST_PACKAGE_UPDATE => 'onPostPackage',
-            // run uninstall task, executed by deactivate group
-            // PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostPackage',
+            /**
+             * run uninstall task, on uninstall package
+             * comment this POST_PACKAGE_UNINSTALL for : 
+             * run uninstall task on deactivate group
+             */
+            PackageEvents::POST_PACKAGE_UNINSTALL => 'onPostPackage',
             ScriptEvents::POST_INSTALL_CMD => 'onPostInstallCmd',
             ScriptEvents::POST_UPDATE_CMD => 'onPostUpdateCmd',
         ];
