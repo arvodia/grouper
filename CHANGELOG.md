@@ -1,6 +1,6 @@
 CHANGELOG
 =========
-1.1.6
+1.1.7
 -----
 * Uninstall files when uninstalling a package instead of disabling a group 
 
