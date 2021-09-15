@@ -53,6 +53,7 @@ class GrouperTaskCommand extends BaseCommand {
                     new InputArgument('name', InputArgument::REQUIRED, $this->trans['argument_name']),
                 ])
                 ->addOption('run', 'r', InputOption::VALUE_NONE, $this->trans['option_run'])
+                ->addOption('global', 'g', InputOption::VALUE_NONE, $this->trans['option_global'])
                 ->addOption('uninstall', 'u', InputOption::VALUE_NONE, $this->trans['option_run_uninstall'])
                 ->addOption('delete', null, InputOption::VALUE_NONE, $this->trans['option_delete'])
         ;
@@ -83,18 +84,21 @@ class GrouperTaskCommand extends BaseCommand {
 
         $choices = array_merge([0 => $group], array_keys($grouper->getPackagesByGroup($group)));
 
-        if ($input->getOption('run') || $input->getOption('uninstall')) {
+        if ($input->getOption('run') || $input->getOption('global') || $input->getOption('uninstall')) {
             if (!$grouper->isGroupActivated($group)) {
                 $alert->error('run_tasks_exception');
             }
 
             $task = new Task($this->getComposer(), $io, $input);
-            $io->write(sprintf('Run %s packages Tasks...', $group));
 
-            $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
-            foreach ($grouper->getPackagesByGroup($group) as $package => $packageConfig) {
-                if (!is_null($packageObject = $installedRepo->findPackage($package, '*'))) {
-                    $task->runTasks($packageObject, $input->getOption('uninstall'));
+            if ($input->getOption('run') || $input->getOption('uninstall')) {
+                $io->write(sprintf('Run %s packages Tasks...', $group));
+
+                $installedRepo = $this->getComposer()->getRepositoryManager()->getLocalRepository();
+                foreach ($grouper->getPackagesByGroup($group) as $package => $packageConfig) {
+                    if (!is_null($packageObject = $installedRepo->findPackage($package, '*'))) {
+                        $task->runTasks($packageObject, $input->getOption('uninstall'));
+                    }
                 }
             }
 
