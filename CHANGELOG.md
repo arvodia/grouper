@@ -1,5 +1,10 @@
 CHANGELOG
 =========
+
+1.1.9
+-----
+* Added the option of run group tasks without running and package tasks in GrouperTaskCommand
+
 1.1.8
 -----
 * Added the option of run group tasks without running and package tasks in GrouperTaskCommand

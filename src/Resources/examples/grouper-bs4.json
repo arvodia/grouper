@@ -1,0 +1,93 @@
+{
+    "name": "arvodia",
+    "groups": {
+        "arvodia-asset": {
+            "description": "The CSS/JS dependencies required by arvodia",
+            "activated": false,
+            "tasks-option": {
+                "uninstall": true
+            },
+            "require": {
+                "npm-asset/bootstrap": {
+                    "version": "^4.6.0",
+                    "tasks": {
+                        "file-mapping-overwrite": [
+                            [
+                                "dist/css/bootstrap.min.css",
+                                "public/src/libs/css/bootstrap.min.css"
+                            ],
+                            [
+                                "dist/js/bootstrap.min.js",
+                                "public/src/libs/js/bootstrap.min.js"
+                            ],
+                            [
+                                "dist/js/bootstrap.bundle.min.js",
+                                "public/src/libs/js/bootstrap.bundle.min.js"
+                            ]
+                        ]
+                    }
+                },
+                "npm-asset/jquery": {
+                    "version": "^3.5.1",
+                    "tasks": {
+                        "file-mapping-overwrite": [
+                            [
+                                "dist/jquery.min.js",
+                                "public/src/libs/js/jquery.min.js"
+                            ]
+                        ]
+                    }
+                },
+                "npm-asset/popper.js": {
+                    "version": "^1.16.1",
+                    "tasks": {
+                        "file-mapping-overwrite": [
+                            [
+                                "dist/umd/popper.min.js",
+                                "public/src/libs/js/popper.min.js"
+                            ]
+                        ]
+                    }
+                },
+                "npm-asset/font-awesome": {
+                    "version": "^5.15.3",
+                    "tasks": {
+                        "file-mapping-overwrite": [
+                            [
+                                "webfonts",
+                                "public/src/libs/webfonts"
+                            ],
+                            [
+                                "css/all.min.css",
+                                "public/src/libs/css/all.min.css"
+                            ]
+                        ]
+                    }
+                },
+                "npm-asset/startbootstrap-sb-admin": {
+                    "version": "^6.0.3",
+                    "tasks": {
+                        "file-mapping-overwrite": [
+                            [
+                                "dist/assets/img/error-404-monochrome.svg",
+                                "public/src/libs/img/error-404-monochrome.svg"
+                            ]
+                        ],
+                        "css-minifying-overwrite": [
+                            [
+                                "dist/css/styles.css",
+                                "public/src/libs/css/bootstrap.admin.min.css"
+                            ]
+                        ],
+                        "js-minifying-overwrite": [
+                            [
+                                "dist/js/scripts.js",
+                                "public/src/libs/js/bootstrap.admin.min.js"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
