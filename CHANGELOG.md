@@ -1,13 +1,17 @@
 CHANGELOG
 =========
 
+1.2.0
+-----
+* Added patcher task
+
 1.1.9
 -----
-* Added the option of run group tasks without running and package tasks in GrouperTaskCommand
+* Added option to run global tasks without running packager tasks 
 
 1.1.8
 -----
-* Added the option of run group tasks without running and package tasks in GrouperTaskCommand
+* Added option to run global tasks without running packager tasks 
 
 1.1.7
 -----

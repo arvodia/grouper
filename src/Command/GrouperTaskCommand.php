@@ -42,7 +42,8 @@ class GrouperTaskCommand extends BaseCommand {
         'css-minifying',
         'css-minifying-overwrite',
         'js-minifying',
-        'js-minifying-overwrite'
+        'js-minifying-overwrite',
+        'file-patcher'
     ];
 
     protected function configure() {
@@ -134,7 +135,7 @@ class GrouperTaskCommand extends BaseCommand {
                     }
                 }
                 $source = count($source) == 1 ? $source[0] : $source;
-                $dest = $this->askPath($io, sprintf($this->trans['question_add_destination'], $compared));
+                $dest = $this->askPath($io, sprintf($this->trans['file-patcher' === $task ? 'question_add_patch' : 'question_add_destination'], $compared));
                 if (strpos($toApply, '/')) {
                     $grouper->addPackageTask($group, $toApply, $task, [$source, $dest]);
                 } else {

@@ -19,6 +19,7 @@ use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
 use Composer\Package\PackageInterface;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Process\Process;
 use function str_ends_with;
 use function str_starts_with;
 
@@ -114,6 +115,8 @@ class Task {
                                 $this->minifying('css', $manifest, $from);
                             } elseif (str_starts_with($task, 'js-minifying')) {
                                 $this->minifying('js', $manifest, $from);
+                            } elseif ('file-patcher' === $task) {
+                                $this->patcher($manifest, $from);
                             }
                         }
                     }
@@ -124,6 +127,35 @@ class Task {
 
     private function isPackagesChecked(string $package): bool {
         return $this->packagesChecked[$package] ?? false;
+    }
+
+    private function patcher(array $manifest, string $from): void {
+        $to = $this->rootDir;
+        foreach ($manifest as $source => $patch) {
+            $sourcePath = $this->fileSystems->concatenate([$from, $source]);
+            $patchPath = $this->fileSystems->concatenate([$to, $patch]);
+            $this->io->write(sprintf('  [Patch] <fg=green>"%s"</>', $sourcePath));
+            $this->executer([[
+            'patch',
+            '-uN',
+            $sourcePath,
+            '-i',
+            $patchPath,
+            ]]);
+        }
+    }
+
+    private function executer(array $command) {
+        $process = new Process(...$command);
+
+        $process->setTimeout(null);
+
+        $process->run();
+
+        if (false === $process->isSuccessful()) {
+            $this->io->alert($process->getErrorOutput());
+            exit(1);
+        }
     }
 
     private function minifying(string $minifier, array $manifest, string $from): void {

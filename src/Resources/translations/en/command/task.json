@@ -13,6 +13,7 @@
     "confirm_add_joine": "Do you want to add another file then they will be attached in 1 output file [<comment>yes</comment>]?",
     "question_add_source": "Please add a source, The path compared to the location of \"%s\" :",
     "question_add_destination": "Please add a destination, The path compared to the location of \"composer.json\":",
+    "question_add_patch": "Please add a patch, The path compared to the location of \"composer.json\":",
     "not_valid_path": "The path is not valid",
     "not_valid_path_slash": "The path must not end or begins with a slash.",
     "ask_uninstall_remove": "Do you want to remove all files added by Tasker after disabling a group [<comment>yes</comment>]?",
