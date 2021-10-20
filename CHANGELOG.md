@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.2.1
+-----
+* Clean .rej files after patch
+
 1.2.0
 -----
 * Added patcher task

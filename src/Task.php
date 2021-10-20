@@ -108,7 +108,9 @@ class Task {
                         if ($manifest) {
                             $this->fileSystems->setOverwrite(str_ends_with($task, '-overwrite'));
                             if ($remove) {
-                                $this->fileSystems->removeFiles($manifest, $this->rootDir);
+                                if ('file-patcher' !== $task) {
+                                    $this->fileSystems->removeFiles($manifest, $this->rootDir);
+                                }
                             } elseif (str_starts_with($task, 'file-mapping')) {
                                 $this->fileSystems->copyFiles($manifest, $from);
                             } elseif (str_starts_with($task, 'css-minifying')) {
@@ -142,6 +144,11 @@ class Task {
             '-i',
             $patchPath,
             ]]);
+            $sourcePathRej = $targetPath . '.rej';
+            if (file_exists($sourcePathRej)) {
+                @unlink($sourcePathRej);
+                $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->relativize($sourcePathRej)));
+            }
         }
     }
 
