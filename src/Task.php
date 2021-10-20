@@ -144,7 +144,7 @@ class Task {
             '-i',
             $patchPath,
             ]]);
-            $sourcePathRej = $targetPath . '.rej';
+            $sourcePathRej = $sourcePath . '.rej';
             if (file_exists($sourcePathRej)) {
                 @unlink($sourcePathRej);
                 $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->relativize($sourcePathRej)));

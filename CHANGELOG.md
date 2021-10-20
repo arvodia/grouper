@@ -1,7 +1,7 @@
 CHANGELOG
 =========
 
-1.2.1
+1.2.2
 -----
 * Clean .rej files after patch
 
