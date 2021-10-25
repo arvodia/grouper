@@ -97,6 +97,8 @@ There are three types of tasks :
   - css-minifying-overwrite
   - js-minifying
   - js-minifying-overwrite
+  - file-patcher
+  - file-dir-remove
   
 Each one of these tasks needs two parameters: `source` and `destination`
   - source group 

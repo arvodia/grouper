@@ -66,19 +66,19 @@ class FileSystems {
         }
     }
 
-    public function removeFiles(array $manifest, string $workDir, bool $notdetail = false) {
+    public function removeFiles(array $manifest, string $workDir, bool $verbose = true) {
         foreach ($manifest as $source => $target) {
             if (is_array($target)) {
-                $this->removeFiles([$source => $source], $workDir, $notdetail);
+                $this->removeFiles([$source => $source], $workDir, $verbose);
                 continue;
             }
             $targetPath = $this->concatenate([$workDir, $target]);
             if (is_dir($targetPath)) {
-                $this->removeFilesFromDir($targetPath);
+                $this->removeFilesFromDir($targetPath, $verbose);
             } else {
                 if (file_exists($targetPath)) {
                     @unlink($targetPath);
-                    if (!$notdetail) {
+                    if ($verbose) {
                         $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->relativize($targetPath)));
                     }
                 }
@@ -107,16 +107,20 @@ class FileSystems {
         return $this->overwrite;
     }
 
-    private function removeFilesFromDir(string $target) {
+    private function removeFilesFromDir(string $target, bool $verbose = true) {
         $iterator = $this->createSourceIterator($target, RecursiveIteratorIterator::CHILD_FIRST);
         foreach ($iterator as $item) {
             $targetPath = $this->concatenate([$target, $iterator->getSubPathName()]);
             if ($item->isDir()) {
                 @rmdir($targetPath);
-                $this->io->write(sprintf('  [Removed] directory <fg=green>"%s"</>', $this->relativize($targetPath)));
+                if ($verbose) {
+                    $this->io->write(sprintf('  [Removed] directory <fg=green>"%s"</>', $this->relativize($targetPath)));
+                }
             } else {
                 @unlink($targetPath);
-                $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->relativize($targetPath)));
+                if ($verbose) {
+                    $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->relativize($targetPath)));
+                }
             }
         }
     }

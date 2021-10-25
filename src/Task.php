@@ -114,7 +114,7 @@ class Task {
                             } elseif ('file-dir-remove' === $task) {
                                 foreach ($manifest as $source => $dest) {
                                     foreach ($dest as $files) {
-                                        $this->fileSystems->removeFiles([$files], $from, true);
+                                        $this->fileSystems->removeFiles([$files], $from, false);
                                         $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $files));
                                     }
                                 }

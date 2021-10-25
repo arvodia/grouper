@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.2.4
+-----
+* Added remove file or folder verbose 
+
 1.2.3
 -----
 * Added remove file or folder task
