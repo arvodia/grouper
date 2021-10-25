@@ -108,8 +108,15 @@ class Task {
                         if ($manifest) {
                             $this->fileSystems->setOverwrite(str_ends_with($task, '-overwrite'));
                             if ($remove) {
-                                if ('file-patcher' !== $task) {
+                                if ('file-dir-remove' !== $task && 'file-patcher' !== $task) {
                                     $this->fileSystems->removeFiles($manifest, $this->rootDir);
+                                }
+                            } elseif ('file-dir-remove' === $task) {
+                                foreach ($manifest as $source => $dest) {
+                                    foreach ($dest as $files) {
+                                        $this->fileSystems->removeFiles([$files], $from, true);
+                                        $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $files));
+                                    }
                                 }
                             } elseif (str_starts_with($task, 'file-mapping')) {
                                 $this->fileSystems->copyFiles($manifest, $from);

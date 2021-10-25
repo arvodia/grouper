@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.2.3
+-----
+* Added remove file or folder task
+
 1.2.2
 -----
 * Clean .rej files after patch

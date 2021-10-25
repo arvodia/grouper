@@ -66,10 +66,10 @@ class FileSystems {
         }
     }
 
-    public function removeFiles(array $manifest, string $workDir) {
+    public function removeFiles(array $manifest, string $workDir, bool $notdetail = false) {
         foreach ($manifest as $source => $target) {
             if (is_array($target)) {
-                $this->removeFiles([$source => $source], $workDir);
+                $this->removeFiles([$source => $source], $workDir, $notdetail);
                 continue;
             }
             $targetPath = $this->concatenate([$workDir, $target]);
@@ -78,7 +78,9 @@ class FileSystems {
             } else {
                 if (file_exists($targetPath)) {
                     @unlink($targetPath);
-                    $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->relativize($targetPath)));
+                    if (!$notdetail) {
+                        $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->relativize($targetPath)));
+                    }
                 }
             }
         }

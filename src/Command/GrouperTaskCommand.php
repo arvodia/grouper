@@ -43,7 +43,8 @@ class GrouperTaskCommand extends BaseCommand {
         'css-minifying-overwrite',
         'js-minifying',
         'js-minifying-overwrite',
-        'file-patcher'
+        'file-patcher',
+        'file-dir-remove'
     ];
 
     protected function configure() {
@@ -115,6 +116,7 @@ class GrouperTaskCommand extends BaseCommand {
             }
         } else {
             $isMinify = null;
+            $isRemove = null;
 
             $taskOption = $grouper->getGroupTaskOption($group);
             if (!array_key_exists('uninstall', $taskOption)) {
@@ -126,16 +128,21 @@ class GrouperTaskCommand extends BaseCommand {
                 $toApply = $ss->choice($this->trans['question_add_task'], $choices);
                 $task = $ss->choice($this->trans['question_type_task'], self::TASKS);
                 $isMinify = $isMinify ?: str_ends_with($task, 'minifying');
+                $isRemove = $isRemove ?: 'file-dir-remove' === $task;
                 $compared = strpos($toApply, '/') ? 'package directory' : 'composer.json';
                 $source = [];
                 $source[] = $this->askPath($io, sprintf($this->trans['question_add_source'], $compared));
-                if (strpos($task, 'minifying')) {
-                    while ($io->askConfirmation($this->trans['confirm_add_joine'] . PHP_EOL . '>')) {
+                if (strpos($task, 'minifying') || $isRemove) {
+                    while ($io->askConfirmation($this->trans[$isRemove ? 'confirm_add_remove' : 'confirm_add_joine'] . PHP_EOL . '>')) {
                         $source[] = $this->askPath($io, sprintf($this->trans['question_add_source'], $compared));
                     }
                 }
-                $source = count($source) == 1 ? $source[0] : $source;
-                $dest = $this->askPath($io, sprintf($this->trans['file-patcher' === $task ? 'question_add_patch' : 'question_add_destination'], $compared));
+                if ($isRemove) {
+                    $dest = 0;
+                } else {
+                    $source = count($source) == 1 ? $source[0] : $source;
+                    $dest = $this->askPath($io, sprintf($this->trans['file-patcher' === $task ? 'question_add_patch' : 'question_add_destination'], $compared));
+                }
                 if (strpos($toApply, '/')) {
                     $grouper->addPackageTask($group, $toApply, $task, [$source, $dest]);
                 } else {

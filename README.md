@@ -27,8 +27,9 @@ The advantage of grouper with other CSS and JavaScript supports, there is no nee
   - Grouping packages in a single name
   - Activate a group install all these packages and run task
   - Tasks to be performed for groups and packages
-  - File mapping and css, js minification
-  - File patcher
+    - File mapping and css, js minification
+    - File patcher
+    - File, folder Remove
   - Interactive commands
   - Interactive initialization of the grouper.json file
   - Interactive group ans task manager
