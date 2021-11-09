@@ -111,20 +111,25 @@ class Task {
                                 if ('file-dir-remove' !== $task && 'file-patcher' !== $task) {
                                     $this->fileSystems->removeFiles($manifest, $this->rootDir);
                                 }
-                            } elseif ('file-dir-remove' === $task) {
+                            }
+                            elseif ('file-dir-remove' === $task) {
                                 foreach ($manifest as $source => $dest) {
                                     foreach ($dest as $files) {
                                         $this->fileSystems->removeFiles([$files], $from, false);
                                         $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $files));
                                     }
                                 }
-                            } elseif (str_starts_with($task, 'file-mapping')) {
+                            }
+                            elseif (str_starts_with($task, 'file-mapping')) {
                                 $this->fileSystems->copyFiles($manifest, $from);
-                            } elseif (str_starts_with($task, 'css-minifying')) {
+                            }
+                            elseif (str_starts_with($task, 'css-minifying')) {
                                 $this->minifying('css', $manifest, $from);
-                            } elseif (str_starts_with($task, 'js-minifying')) {
+                            }
+                            elseif (str_starts_with($task, 'js-minifying')) {
                                 $this->minifying('js', $manifest, $from);
-                            } elseif ('file-patcher' === $task) {
+                            }
+                            elseif ('file-patcher' === $task) {
                                 $this->patcher($manifest, $from);
                             }
                         }
@@ -141,25 +146,36 @@ class Task {
     private function patcher(array $manifest, string $from): void {
         $to = $this->rootDir;
         foreach ($manifest as $source => $patch) {
-            $sourcePath = $this->fileSystems->concatenate([$from, $source]);
-            $patchPath = $this->fileSystems->concatenate([$to, $patch]);
+            if (!is_file($sourcePath = $this->fileSystems->concatenate([$from, $source]))) {
+                $this->io->error(sprintf('  [NOT EXIST] File : "%s"', $sourcePath));
+                if (FileSystems::FORCE_EXIT) {
+                    exit(1);
+                }
+                continue;
+            }
+            if (!is_file($patchPath = $this->fileSystems->concatenate([$to, $patch]))) {
+                $this->io->error(sprintf('  [NOT EXIST] File : "%s"', $patchPath));
+                if (FileSystems::FORCE_EXIT) {
+                    exit(1);
+                }
+                continue;
+            }
             $this->io->write(sprintf('  [Patch] <fg=green>"%s"</>', $sourcePath));
             $this->executer([[
-            'patch',
-            '-uN',
-            $sourcePath,
-            '-i',
-            $patchPath,
-            ]]);
-            $sourcePathRej = $sourcePath . '.rej';
-            if (file_exists($sourcePathRej)) {
+                'patch',
+                '-uN',
+                $sourcePath,
+                '-i',
+                $patchPath,
+                ]], false);
+            if (file_exists($sourcePathRej = $sourcePath . '.rej')) {
                 @unlink($sourcePathRej);
-                $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->relativize($sourcePathRej)));
+                $this->io->write(sprintf('  [Removed] <fg=green>"%s"</>', $this->fileSystems->relativize($sourcePathRej)));
             }
         }
     }
 
-    private function executer(array $command) {
+    private function executer(array $command, bool $showError = true, bool $forceExit = false) {
         $process = new Process(...$command);
 
         $process->setTimeout(null);
@@ -167,8 +183,12 @@ class Task {
         $process->run();
 
         if (false === $process->isSuccessful()) {
-            $this->io->alert($process->getErrorOutput());
-            exit(1);
+            if ($showError) {
+                $this->io->error(sprintf('  [ERROR] exec command : "%s"', $process->getCommandLine()));
+            }
+            if ($forceExit) {
+                exit(1);
+            }
         }
     }
 
@@ -193,7 +213,8 @@ class Task {
                     }
                     $sourcesPaths[] = $path;
                 }
-            } else {
+            }
+            else {
                 if (is_null($this->getMinify($minifier))) {
                     $this->io->warning('  [Minify][Fake][Start] Create Fake Minify Files');
                     $this->fileSystems->copyFiles([$source => $target], $from);
@@ -234,7 +255,8 @@ class Task {
                 $minifierClass->minify($targetPath);
                 if (is_file($targetPath)) {
                     $this->io->write(sprintf('  [Minify][Created] : <fg=green>"%s"</>', $this->fileSystems->relativize($targetPath)));
-                } else {
+                }
+                else {
                     foreach ($sourcesPaths as $sourcePath) {
                         $this->io->error(sprintf('  [Minify][Not Copied] File : "%s"', $this->fileSystems->relativize($sourcePath)));
                         if (FileSystems::FORCE_EXIT) {

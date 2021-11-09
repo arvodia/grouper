@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.2.5
+-----
+* Added show exception in patche task
+
 1.2.4
 -----
 * Added remove file or folder verbose 
