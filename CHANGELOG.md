@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.2.7
+-----
+* adopt them for the new process
+
 1.2.6
 -----
 * fix php-8 deprecated

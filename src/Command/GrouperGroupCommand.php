@@ -115,7 +115,7 @@ class GrouperGroupCommand extends RequirementsCommand {
 
             $exec = 'composer ' . ($activate ? 'require' : 'remove');
             foreach (array_combine(array_keys($noInstalledPackage), array_column($noInstalledPackage, 'version')) as $package => $version) {
-                $exec .= $activate ? ' "' . $package . '":"' . $version . '"' : ' ' . $package;
+                $exec .= $activate ? ' ' . $package . ':' . $version . '' : ' ' . $package;
                 $replace[] = '<fg=green>' . $package . '</>';
             }
 

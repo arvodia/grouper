@@ -28,6 +28,7 @@ use Symfony\Component\Process\Process;
 class Terminal {
 
     public static function exec(string $exec, string $cwd = null, IOInterface $io = null, $search = null, $replace = null, bool $exit = true): bool {
+        $command = explode(' ', $exec);
         $process = new Process($exec, $cwd);
         $process->setTimeout(0);
 
