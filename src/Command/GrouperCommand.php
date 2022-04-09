@@ -54,7 +54,7 @@ class GrouperCommand extends BaseCommand {
 
     protected function execute(InputInterface $input, OutputInterface $output) {
         $this->getIO()->write(Grouper::getLongVersion());
-        
+
         $this->io = $this->getIO();
         $formatter = $this->getHelperSet()->get('formatter');
         $alert = new Alert(new SymfonyStyle($input, $output));
@@ -63,7 +63,7 @@ class GrouperCommand extends BaseCommand {
             $alert->warning('initiate', null, true);
         }
 
-        $group = strtolower($input->getArgument('group'));
+        $group = strtolower($input->getArgument('group') ?: '');
 
         if ($group && !$grouper->hasGroup($group)) {
             $alert->error('group_not_found', [$group, $grouper->getName()]);

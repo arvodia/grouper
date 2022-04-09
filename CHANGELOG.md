@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.2.6
+-----
+* fix php-8 deprecated
+
 1.2.5
 -----
 * Added show exception in patche task
