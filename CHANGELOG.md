@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+1.3.0
+-----
+* upgrade composer-plugin-api
+
 1.2.8
 -----
 * adopt them for the new process
