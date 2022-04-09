@@ -1,12 +1,9 @@
 CHANGELOG
 =========
 
-1.2.7
+1.2.8
 -----
 * adopt them for the new process
-
-1.2.6
------
 * fix php-8 deprecated
 
 1.2.5
