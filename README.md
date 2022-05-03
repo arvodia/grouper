@@ -1,5 +1,7 @@
 ![EURL ARVODIA Logo](https://raw.githubusercontent.com/arvodia/src/main/img/arvodia-logo.png)
+
 # Composer plugin, package and tasks manager by group
+
 Grouper is a composer plug-in that allows you to place the packages in a group, to install or uninstall the packages of a group with a single command.
 
 Grouper scripts are called tasks they can copy files, directories or shrink css and js files.
